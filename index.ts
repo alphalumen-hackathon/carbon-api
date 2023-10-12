@@ -82,28 +82,34 @@ app.get("/feed", async (req, res) => {
   }
 
   try {
-    // FIXME: flatten the feed.
-
     const user = await prisma.user.findUnique({
-      where: {
-        username: req.session.user.username
-      },
-      include: {
-        creditLogs: true,
-        following: {
-          select: {
-            username: true,
-            creditLogs: true,
-          },
-        },
-      },
+      where: { username: req.session.user.username },
+      select: { id: true, following: { select: { id: true } } },
     })
 
     if (!user) {
       return res.status(404).send("User not found")
     }
 
-    res.json(user)
+    const feed = await prisma.creditLog.findMany({
+      where: { userId: { in: [user.id, ...user.following.map(({ id }) => id)] } },
+      select: {
+        amount: true,
+        createdAt: true,
+        endAddr: true,
+        endLat: true,
+        endLng: true,
+        startAddr: true,
+        startLat: true,
+        startLng: true,
+        type: true,
+        user: { select: { username: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 128,
+    })
+
+    res.json(feed)
   } catch (error) {
     console.error(error)
     res.status(500).send("Error fetching user feed")

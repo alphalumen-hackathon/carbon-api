@@ -12,8 +12,8 @@ model User {
   username   String      @unique
   password   String
   tokens     Token[]
-  followers  User[]      @relation("Followers")
-  following  User[]      @relation("Followers")
+  followers  User[]      @relation("followers")
+  following  User[]      @relation("followers")
   creditLogs CreditLog[]
 }
 
@@ -25,7 +25,7 @@ model Token {
 }
 
 model CreditLog {
-  id        Int    @id @default(autoincrement())
+  id        String   @id @default(uuid())
   amount    Float
   type      String
   startLng  Float
@@ -35,5 +35,6 @@ model CreditLog {
   endLat    Float
   endAddr   String
   userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
