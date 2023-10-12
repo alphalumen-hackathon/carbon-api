@@ -16,21 +16,17 @@ This project provides an API for managing [carbon](https://github.com/alphalumen
    ```sh
    npm i
    ```
-4. Generate Prisma client code:
-   ```sh
-   npx prisma generate
-   ```
-5. Add a .env file with your database URL:
+4. Add a .env file with your database URL:
    ```
    touch .env
    echo 'DB_URL="mysql://user:password@url:port/db_name"' >> .env
    echo 'SESSION_SECRET="strong_password_here"' >> .env
    ```
-6. Ensure the database has the latest schema:
+5. Ensure the database has the latest schema:
    ```sh
    npx prisma migrate dev
    ```
-7. To run the application, execute the following command:
+6. To run the application, execute the following command:
    ```sh
    npm start
    ```

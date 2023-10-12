@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npx prisma generate",
     "build": "tsc --project tsconfig.json",
     "start": "node index.js",
     "dev": "npm run build && npm start"
