@@ -1,7 +1,8 @@
-import express from "express"
 import { PrismaClient } from "@prisma/client"
-import session from "express-session"
+import { compare, hash } from "bcrypt"
 import { config } from "dotenv"
+import express from "express"
+import session from "express-session"
 
 config({ path: ".env" })
 
@@ -28,16 +29,16 @@ declare module "express-session" {
   }
 }
 
-// FIXME: make passwords safe
-
 app.post("/signup", async (req, res) => {
-  const { username, password } = req.body
+  const { username, password: unsafePassword } = req.body
 
   try {
+    const hashedPassword = await hash(unsafePassword, 12)
+
     const user = await prisma.user.create({
       data: {
         username,
-        password,
+        password: hashedPassword,
       },
     })
 
@@ -58,16 +59,17 @@ app.post("/signin", async (req, res) => {
 
   try {
     const user = await prisma.user.findFirst({
-      where: {
-        username,
-        password,
-      },
+      where: { username },
     })
+
     if (user) {
-      req.session.authenticated = true
-      req.session.user = { username }
-      return res.json(req.session)
+      if (await compare(password, user.password)) {
+        req.session.authenticated = true
+        req.session.user = { username }
+        return res.json(req.session)
+      }
     }
+
   } catch (error) {
     console.error(error)
     return res.status(500).send("Error authenticating the user")
