@@ -190,21 +190,29 @@ app.post("/credit/log", async (req, res) => {
     = req.body
 
   try {
+    const data = {
+      amount,
+      type,
+      startLng,
+      startLat,
+      startAddr,
+      endLng,
+      endLat,
+      endAddr,
+    }
+
     const creditLog = await prisma.creditLog.create({
       data: {
-        amount,
-        type,
-        startLng,
-        startLat,
-        startAddr,
-        endLng,
-        endLat,
-        endAddr,
+        ...data,
         user: { connect: { username: `${req.session?.user?.username}` } }
       },
     })
 
-    res.status(201).json(creditLog)
+    if (!creditLog) {
+      return res.status(500).send("Error creating credit log")
+    }
+
+    res.status(201).json({ ...data, createdAt: creditLog.createdAt })
   } catch (error) {
     console.error(error)
     res.status(500).send("Error creating credit log")
