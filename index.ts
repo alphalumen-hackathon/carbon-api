@@ -60,6 +60,7 @@ app.post("/signin", async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: { username },
+      select: { password: true },
     })
 
     if (user) {
@@ -79,13 +80,13 @@ app.post("/signin", async (req, res) => {
 })
 
 app.get("/feed", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.status(401).send("User not authenticated")
+  if (!req.session?.authenticated) {
+    return res.status(401).send("User not authenticated")
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username: req.session.user.username },
+      where: { username: `${req.session?.user?.username}` },
       select: { id: true, following: { select: { id: true } } },
     })
 
@@ -119,39 +120,21 @@ app.get("/feed", async (req, res) => {
 })
 
 app.get("/follow/:username", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.status(401).send("User not authenticated")
+  if (!req.session?.authenticated) {
+    return res.status(401).send("User not authenticated")
   }
 
   const { username } = req.params
 
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        username: req.session.user.username,
-      },
-    })
-
-    if (!user) {
-      return res.status(404).send("User not found")
-    }
-
-    const targetUser = await prisma.user.findUnique({ where: { username } })
-
-    if (!targetUser) {
-      return res.status(404).send("Target user not found")
-    }
-
-    if (targetUser.id == user.id) {
+    if (req.session?.user?.username == username) {
       return res.status(400).send("Users cannot follow themselves")
     }
 
     await prisma.user.update({
-      where: {
-        id: user.id,
-      },
+      where: { username: req.session?.user?.username },
       data: {
-        following: { connect: { id: targetUser.id } },
+        following: { connect: { username } },
       },
     })
 
@@ -163,17 +146,27 @@ app.get("/follow/:username", async (req, res) => {
 })
 
 app.get("/credit/list", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.status(401).send("User not authenticated")
+  if (!req.session?.authenticated) {
+    return res.status(401).send("User not authenticated")
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        username: req.session.user.username,
-      },
-      include: {
-        creditLogs: true,
+      where: { username: req.session?.user.username },
+      select: {
+        creditLogs: {
+          select: {
+            amount: true,
+            createdAt: true,
+            endAddr: true,
+            endLat: true,
+            endLng: true,
+            startAddr: true,
+            startLat: true,
+            startLng: true,
+            type: true,
+          },
+        },
       },
     })
 
@@ -189,24 +182,14 @@ app.get("/credit/list", async (req, res) => {
 })
 
 app.post("/credit/log", async (req, res) => {
-  if (!req.session.authenticated) {
-    res.status(401).send("User not authenticated")
+  if (!req.session?.authenticated) {
+    return res.status(401).send("User not authenticated")
   }
 
   const { amount, type, startLng, startLat, startAddr, endLng, endLat, endAddr }
     = req.body
 
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        username: req.session.user.username,
-      },
-    })
-
-    if (!user) {
-      return res.status(404).send("User not found")
-    }
-
     const creditLog = await prisma.creditLog.create({
       data: {
         amount,
@@ -217,7 +200,7 @@ app.post("/credit/log", async (req, res) => {
         endLng,
         endLat,
         endAddr,
-        userId: user.id,
+        user: { connect: { username: `${req.session?.user?.username}` } }
       },
     })
 
