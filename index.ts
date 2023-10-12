@@ -3,6 +3,7 @@ import { compare, hash } from "bcrypt"
 import { config } from "dotenv"
 import express from "express"
 import session from "express-session"
+import { z } from "zod"
 
 config({ path: ".env" })
 
@@ -11,6 +12,11 @@ const app = express()
 const store = new session.MemoryStore()
 
 app.use(express.json())
+
+if (!process.env.SESSION_SECRET) {
+  console.error("No SESSION_SECRET environment variable provided")
+  process.exit(1)
+}
 
 app.use(
   session({
@@ -30,9 +36,20 @@ declare module "express-session" {
 }
 
 app.post("/signup", async (req, res) => {
-  const { username, password: unsafePassword } = req.body
+  const result = z
+    .object({
+      username: z.string(),
+      password: z.string(),
+    })
+    .safeParse(req.body)
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error })
+  }
 
   try {
+    const { username, password: unsafePassword } = result.data
+
     const hashedPassword = await hash(unsafePassword, 12)
 
     const user = await prisma.user.create({
@@ -55,8 +72,19 @@ app.post("/signup", async (req, res) => {
 })
 
 app.post("/signin", async (req, res) => {
+  const result = z
+    .object({
+      username: z.string(),
+      password: z.string(),
+    })
+    .safeParse(req.body)
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error })
+  }
+
   try {
-    const { username, password } = req.body
+    const { username, password } = result.data
 
     const user = await prisma.user.findFirst({
       where: { username },
@@ -85,7 +113,8 @@ app.get("/feed", async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { username: req.session?.user?.username },
       select: {
-        id: true, following: { select: { id: true } },
+        id: true,
+        following: { select: { id: true } },
       },
     })
 
@@ -125,9 +154,15 @@ app.get("/follow/:username", async (req, res) => {
     return res.status(401).json({ error: "User not authenticated" })
   }
 
-  const { username } = req.params
+  const result = z.object({ username: z.string() }).safeParse(req.params)
 
-  if (req.session?.user?.username == username) {
+  if (!result.success) {
+    return res.status(400).json({ error: result.error })
+  }
+
+  const { username } = result.data
+
+  if (req.session?.user?.username === username) {
     return res.status(400).json({ error: "Users cannot follow themselves" })
   }
 
@@ -153,7 +188,7 @@ app.get("/credit/list", async (req, res) => {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username: req.session?.user.username },
+      where: { username: req.session?.user?.username },
       select: {
         creditLogs: {
           select: {
@@ -187,25 +222,28 @@ app.post("/credit/log", async (req, res) => {
     return res.status(401).json({ error: "User not authenticated" })
   }
 
-  const { amount, type, startLng, startLat, startAddr, endLng, endLat, endAddr }
-    = req.body
+  const creditLogSchema = z.object({
+    amount: z.number(),
+    type: z.string(),
+    startLng: z.number(),
+    startLat: z.number(),
+    startAddr: z.string(),
+    endLng: z.number(),
+    endLat: z.number(),
+    endAddr: z.string(),
+  })
+
+  const result = creditLogSchema.safeParse(req.body)
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error })
+  }
 
   try {
-    const data = {
-      amount,
-      type,
-      startLng,
-      startLat,
-      startAddr,
-      endLng,
-      endLat,
-      endAddr,
-    }
-
     const creditLog = await prisma.creditLog.create({
       data: {
-        ...data,
-        user: { connect: { username: `${req.session?.user?.username}` } }
+        ...result.data,
+        user: { connect: { username: `${req.session?.user?.username}` } },
       },
     })
 
@@ -213,7 +251,7 @@ app.post("/credit/log", async (req, res) => {
       return res.status(500).json({ error: "Error creating credit log" })
     }
 
-    return res.status(201).json({ ...data, createdAt: creditLog.createdAt })
+    return res.status(201).json({ ...result.data, createdAt: creditLog.createdAt })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: "Error creating credit log" })
