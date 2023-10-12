@@ -1,0 +1,39 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String      @id @default(uuid())
+  username   String      @unique
+  password   String
+  tokens     Token[]
+  followers  User[]      @relation("Followers")
+  following  User[]      @relation("Followers")
+  creditLogs CreditLog[]
+}
+
+model Token {
+  id     Int    @id @default(autoincrement())
+  token  String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model CreditLog {
+  id        Int    @id @default(autoincrement())
+  amount    Float
+  type      String
+  startLng  Float
+  startLat  Float
+  startAddr String
+  endLng    Float
+  endLat    Float
+  endAddr   String
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+}

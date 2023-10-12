@@ -1,0 +1,21 @@
+{
+  "name": "carbon-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc --esModuleInterop index.ts && node index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.4.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/express-session": "^1.17.8",
+    "@types/passport": "^1.0.13",
+    "@types/passport-google-oauth20": "^2.0.12"
+  }
+}
