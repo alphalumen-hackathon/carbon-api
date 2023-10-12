@@ -24,6 +24,7 @@ This project provides an API for managing [carbon](https://github.com/alphalumen
    ```
    touch .env
    echo 'DB_URL="mysql://user:password@url:port/db_name"' >> .env
+   echo 'SESSION_SECRET="strong_password_here"' >> .env
    ```
 6. Ensure the database has the latest schema:
    ```sh
