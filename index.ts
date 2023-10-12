@@ -51,51 +51,52 @@ app.post("/signup", async (req, res) => {
     console.error(error)
   }
 
-  res.status(500).send("Error creating user")
+  return res.status(500).json({ error: "Error creating user" })
 })
 
 app.post("/signin", async (req, res) => {
-  const { username, password } = req.body
-
   try {
+    const { username, password } = req.body
+
     const user = await prisma.user.findFirst({
       where: { username },
       select: { password: true },
     })
 
-    if (user) {
-      if (await compare(password, user.password)) {
-        req.session.authenticated = true
-        req.session.user = { username }
-        return res.json(req.session)
-      }
+    if (user && await compare(password, user.password)) {
+      req.session.authenticated = true
+      req.session.user = { username }
+      return res.json(req.session)
     }
-
   } catch (error) {
     console.error(error)
-    return res.status(500).send("Error authenticating the user")
+    return res.status(500).json({ error: "Error authenticating the user" })
   }
 
-  res.status(403).send("Bad credentials")
+  return res.status(403).json({ error: "Bad credentials" })
 })
 
 app.get("/feed", async (req, res) => {
   if (!req.session?.authenticated) {
-    return res.status(401).send("User not authenticated")
+    return res.status(401).json({ error: "User not authenticated" })
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username: `${req.session?.user?.username}` },
-      select: { id: true, following: { select: { id: true } } },
+      where: { username: req.session?.user?.username },
+      select: {
+        id: true, following: { select: { id: true } },
+      },
     })
 
     if (!user) {
-      return res.status(404).send("User not found")
+      return res.status(404).json({ error: "User not found" })
     }
 
+    const userIds = [user.id, ...user.following.map(({ id }) => id)]
+
     const feed = await prisma.creditLog.findMany({
-      where: { userId: { in: [user.id, ...user.following.map(({ id }) => id)] } },
+      where: { userId: { in: userIds } },
       select: {
         amount: true,
         createdAt: true,
@@ -112,25 +113,25 @@ app.get("/feed", async (req, res) => {
       take: 128,
     })
 
-    res.json(feed)
+    return res.json(feed)
   } catch (error) {
     console.error(error)
-    res.status(500).send("Error fetching user feed")
+    return res.status(500).json({ error: "Error fetching user feed" })
   }
 })
 
 app.get("/follow/:username", async (req, res) => {
   if (!req.session?.authenticated) {
-    return res.status(401).send("User not authenticated")
+    return res.status(401).json({ error: "User not authenticated" })
   }
 
   const { username } = req.params
 
-  try {
-    if (req.session?.user?.username == username) {
-      return res.status(400).send("Users cannot follow themselves")
-    }
+  if (req.session?.user?.username == username) {
+    return res.status(400).json({ error: "Users cannot follow themselves" })
+  }
 
+  try {
     await prisma.user.update({
       where: { username: req.session?.user?.username },
       data: {
@@ -138,16 +139,16 @@ app.get("/follow/:username", async (req, res) => {
       },
     })
 
-    res.status(200).send("User followed successfully")
+    return res.status(200).json({ error: "User followed successfully" })
   } catch (error) {
     console.error(error)
-    res.status(500).send("Error following user")
+    return res.status(500).json({ error: "Error following user" })
   }
 })
 
 app.get("/credit/list", async (req, res) => {
   if (!req.session?.authenticated) {
-    return res.status(401).send("User not authenticated")
+    return res.status(401).json({ error: "User not authenticated" })
   }
 
   try {
@@ -171,19 +172,19 @@ app.get("/credit/list", async (req, res) => {
     })
 
     if (!user) {
-      return res.status(404).send("User not found")
+      return res.status(404).json({ error: "User not found" })
     }
 
-    res.json(user.creditLogs)
+    return res.json(user.creditLogs)
   } catch (error) {
     console.error(error)
-    res.status(500).send("Error listing credit logs")
+    return res.status(500).json({ error: "Error listing credit logs" })
   }
 })
 
 app.post("/credit/log", async (req, res) => {
   if (!req.session?.authenticated) {
-    return res.status(401).send("User not authenticated")
+    return res.status(401).json({ error: "User not authenticated" })
   }
 
   const { amount, type, startLng, startLat, startAddr, endLng, endLat, endAddr }
@@ -209,13 +210,13 @@ app.post("/credit/log", async (req, res) => {
     })
 
     if (!creditLog) {
-      return res.status(500).send("Error creating credit log")
+      return res.status(500).json({ error: "Error creating credit log" })
     }
 
-    res.status(201).json({ ...data, createdAt: creditLog.createdAt })
+    return res.status(201).json({ ...data, createdAt: creditLog.createdAt })
   } catch (error) {
     console.error(error)
-    res.status(500).send("Error creating credit log")
+    return res.status(500).json({ error: "Error creating credit log" })
   }
 })
 
