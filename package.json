@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsc --project tsconfig.json && node index.js"
+    "build": "tsc --project tsconfig.json",
+    "start": "node index.js",
+    "dev": "npm run build && npm start"
   },
   "dependencies": {
     "@prisma/client": "^5.4.2",
@@ -15,6 +17,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
-    "@types/express-session": "^1.17.8"
+    "@types/express-session": "^1.17.8",
+    "typescript": "^5.2.2"
   }
 }
