@@ -132,10 +132,8 @@ This route allows the authenticated user to create a new credit log.
   - `type` (string): The type of the credit log.
   - `startLng` (number): The starting longitude.
   - `startLat` (number): The starting latitude.
-  - `startAddr` (string): The starting address.
   - `endLng` (number): The ending longitude.
   - `endLat` (number): The ending latitude.
-  - `endAddr` (string): The ending address.
 
 #### Response
 - Status Code 201 (Created) - Successful creation of the credit log.
