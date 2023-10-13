@@ -116,6 +116,22 @@ This route allows the authenticated user to follow another user by their usernam
 - Status Code 404 (Not Found) - Either the user or the target user not found.
 - Status Code 500 (Internal Server Error) - An error occurred during the follow operation.
 
+### `GET /unfollow/:username`
+
+#### Description
+This route allows the authenticated user to unfollow another user by their username.
+
+#### Request
+- Method: GET
+- Authentication: User session (requires prior sign-in)
+- Route Parameter:
+  - `username` (string): The username of the user to unfollow.
+
+#### Response
+- Status Code 200 (OK) - Successful unfollow operation.
+- Status Code 401 (Unauthorized) - User not authenticated.
+- Status Code 500 (Internal Server Error) - An error occurred during the unfollow operation.
+
 ### `GET /credit/list`
 
 #### Description

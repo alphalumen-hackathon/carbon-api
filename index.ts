@@ -204,10 +204,38 @@ app.get("/follow/:username", async (req, res) => {
       },
     })
 
-    return res.status(200).json({ error: "User followed successfully" })
+    return res.status(200)
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: "Error following user" })
+  }
+})
+
+app.get("/unfollow/:username", async (req, res) => {
+  if (!req.session?.authenticated) {
+    return res.status(401).json({ error: "User not authenticated" })
+  }
+
+  const result = z.object({ username: z.string() }).safeParse(req.params)
+
+  if (!result.success) {
+    return res.status(400).json({ error: result.error })
+  }
+
+  const { username } = result.data
+
+  try {
+    await prisma.user.update({
+      where: { username: req.session?.user?.username },
+      data: {
+        following: { disconnect: { username } },
+      },
+    })
+
+    return res.status(200)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: "Error unfollowing user" })
   }
 })
 
