@@ -70,6 +70,19 @@ This route allows a user to sign in by providing their username and password.
 - Status Code 403 (Forbidden) - Authentication failed due to bad credentials.
 - Status Code 500 (Internal Server Error) - An error occurred during authentication.
 
+### `POST /signout`
+
+#### Description
+This route allows an authenticated user to sign out, clearing their session and logging them out.
+
+#### Request
+- Method: POST
+- Authentication: User session (requires prior sign-in)
+
+#### Response
+- Status Code 200 (OK) - User signed out successfully.
+- Status Code 401 (Unauthorized) - User not authenticated.
+
 ### `GET /feed`
 
 #### Description

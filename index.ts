@@ -110,6 +110,16 @@ app.post("/signin", async (req, res) => {
   return res.status(403).json({ error: "Bad credentials" })
 })
 
+app.post("/signout", async (req, res) => {
+  if (!req.session.authenticated) {
+    return res.status(401).json({ error: "User not authenticated" })
+  }
+
+  req.session.authenticated = false
+  req.session.user = undefined
+  return res.status(200)
+})
+
 app.get("/feed", async (req, res) => {
   if (!req.session?.authenticated) {
     return res.status(401).json({ error: "User not authenticated" })
