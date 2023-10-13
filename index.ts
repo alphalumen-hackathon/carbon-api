@@ -145,10 +145,6 @@ app.get("/feed", async (req, res) => {
       select: {
         amount: true,
         createdAt: true,
-        endLat: true,
-        endLng: true,
-        startLat: true,
-        startLng: true,
         type: true,
         user: { select: { username: true } },
       },
@@ -171,10 +167,6 @@ app.get("/global_feed", async (req, res) => {
       select: {
         amount: true,
         createdAt: true,
-        endLat: true,
-        endLng: true,
-        startLat: true,
-        startLng: true,
         type: true,
         user: { select: { username: true } },
       },
@@ -262,10 +254,6 @@ app.get("/credit/list", async (req, res) => {
           select: {
             amount: true,
             createdAt: true,
-            endLat: true,
-            endLng: true,
-            startLat: true,
-            startLng: true,
             type: true,
           },
         },
@@ -291,10 +279,6 @@ app.post("/credit/log", async (req, res) => {
   const creditLogSchema = z.object({
     amount: z.number(),
     type: z.string(),
-    startLng: z.number(),
-    startLat: z.number(),
-    endLng: z.number(),
-    endLat: z.number(),
   })
 
   const result = creditLogSchema.safeParse(req.body)

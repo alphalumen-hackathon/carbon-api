@@ -172,10 +172,6 @@ This route allows the authenticated user to create a new credit log.
 - Request Body:
   - `amount` (number): The amount associated with the credit log.
   - `type` (string): The type of the credit log.
-  - `startLng` (number): The starting longitude.
-  - `startLat` (number): The starting latitude.
-  - `endLng` (number): The ending longitude.
-  - `endLat` (number): The ending latitude.
 
 #### Response
 - Status Code 201 (Created) - Successful creation of the credit log.

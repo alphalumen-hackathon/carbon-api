@@ -20,10 +20,6 @@ model CreditLog {
   id        String   @id @default(uuid()) @db.Char(36)
   amount    Float
   type      String
-  startLng  Float
-  startLat  Float
-  endLng    Float
-  endLat    Float
   userId    String   @db.Char(36)
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
