@@ -153,6 +153,32 @@ app.get("/feed", async (req, res) => {
   }
 })
 
+app.get("/global_feed", async (req, res) => {
+  // User doesn't have to be authenticated in this route.
+
+  try {
+    const feed = await prisma.creditLog.findMany({
+      select: {
+        amount: true,
+        createdAt: true,
+        endLat: true,
+        endLng: true,
+        startLat: true,
+        startLng: true,
+        type: true,
+        user: { select: { username: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 128,
+    })
+
+    return res.json(feed)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ error: "Error fetching the feed" })
+  }
+})
+
 app.get("/follow/:username", async (req, res) => {
   if (!req.session?.authenticated) {
     return res.status(401).json({ error: "User not authenticated" })

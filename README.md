@@ -85,6 +85,19 @@ This route retrieves a feed of credit logs for the authenticated user and users 
 - Status Code 404 (Not Found) - User not found.
 - Status Code 500 (Internal Server Error) - An error occurred during feed retrieval.
 
+### `GET /global_feed`
+
+#### Description
+This route retrieves a global feed of credit logs, displaying recent credit transactions. Unlike the `/feed` route, user authentication is not required to access this route. It provides a snapshot of recent credit activity within the system.
+
+#### Request
+- Method: GET
+- Authentication: None required.
+
+#### Response
+- Status Code 200 (OK) - Successful retrieval of the global feed.
+- Status Code 500 (Internal Server Error) - An error occurred during feed retrieval.
+
 ### `GET /follow/:username`
 
 #### Description
