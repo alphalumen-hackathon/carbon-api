@@ -50,6 +50,12 @@ app.post("/signup", async (req, res) => {
   try {
     const { username, password: unsafePassword } = result.data
 
+    const existingUser = await prisma.user.findUnique({ where: { username } })
+
+    if (existingUser) {
+      return res.status(400).json({ error: "User already exists" })
+    }
+
     const hashedPassword = await hash(unsafePassword, 12)
 
     const user = await prisma.user.create({
