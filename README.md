@@ -199,8 +199,47 @@ This route allows the authenticated user to create a new credit log.
 
 #### Response
 - Status Code 201 (Created) - Successful creation of the credit log.
+  - Response Body:
+    - `amount` (number): The amount associated with the credit log.
+    - `createdAt` (string): The timestamp of the credit log creation.
+    - `type` (string): The type of the credit log.
+- Status Code 400 (Bad Request) - Invalid request data.
 - Status Code 401 (Unauthorized) - User not authenticated.
 - Status Code 404 (Not Found) - User not found.
 - Status Code 500 (Internal Server Error) - An error occurred during credit log creation.
 
 Please make sure to follow the request and response guidelines for each API route. Proper authentication is required for routes that involve user-specific data or actions.
+
+## Technologies Used
+
+The carbon-api project utilizes a variety of technologies and libraries to create a robust web API for managing carbon credits. Below is a list of the key technologies and dependencies used in this project:
+
+### [Prisma](https://www.prisma.io/)
+
+- **Usage**: Prisma is used to interact with the database, manage data models, and perform database operations.
+
+### [Bcrypt](https://github.com/kelektiv/node.bcrypt.js)
+
+- **Usage**: Bcrypt is used to securely hash and compare user passwords for authentication.
+
+### [dotenv](https://github.com/motdotla/dotenv)
+
+- **Usage**: dotenv is used to load environment variables, such as the database URL and session secret, from a .env file.
+
+### [Express](https://expressjs.com/)
+
+- **Usage**: Express is the foundation of the API, handling routing, request handling, and middleware.
+
+### [express-session](https://github.com/expressjs/session)
+
+- **Usage**: express-session is used to manage user sessions, including user authentication and session storage.
+
+### [zod](https://github.com/colinhacks/zod)
+
+- **Usage**: Zod is used for defining and validating the request and response data schemas for the API routes.
+
+### [TypeScript](https://www.typescriptlang.org/)
+
+- **Usage**: TypeScript is used for type-checking and improving code maintainability.
+
+These technologies and dependencies collectively enable the carbon-api project to provide user registration, authentication, and credit log management through a secure and efficient API.
