@@ -117,7 +117,7 @@ app.post("/signout", async (req, res) => {
 
   req.session.authenticated = false
   req.session.user = undefined
-  return res.status(200)
+  return res.status(200).send()
 })
 
 app.get("/feed", async (req, res) => {
@@ -140,7 +140,7 @@ app.get("/feed", async (req, res) => {
 
     const userIds = [user.id, ...user.following.map(({ id }) => id)]
 
-    const feed = await prisma.creditLog.findMany({
+    const followingFeed = await prisma.creditLog.findMany({
       where: { userId: { in: userIds } },
       select: {
         amount: true,
@@ -152,18 +152,8 @@ app.get("/feed", async (req, res) => {
       take: 128,
     })
 
-    return res.json(feed)
-  } catch (error) {
-    console.error(error)
-    return res.status(500).json({ error: "Error fetching user feed" })
-  }
-})
-
-app.get("/global_feed", async (req, res) => {
-  // User doesn't have to be authenticated in this route.
-
-  try {
-    const feed = await prisma.creditLog.findMany({
+    const globalFeed = await prisma.creditLog.findMany({
+      where: { userId: { not: { in: userIds } } },
       select: {
         amount: true,
         createdAt: true,
@@ -174,10 +164,13 @@ app.get("/global_feed", async (req, res) => {
       take: 128,
     })
 
-    return res.json(feed)
+    return res.json([
+      ...followingFeed.map((log) => ({ ...log, following: true })),
+      ...globalFeed.map((log) => ({ ...log, following: false })),
+    ])
   } catch (error) {
     console.error(error)
-    return res.status(500).json({ error: "Error fetching the feed" })
+    return res.status(500).json({ error: "Error fetching user feed" })
   }
 })
 
@@ -206,7 +199,7 @@ app.get("/follow/:username", async (req, res) => {
       },
     })
 
-    return res.status(200)
+    return res.status(200).send()
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: "Error following user" })
@@ -234,7 +227,7 @@ app.get("/unfollow/:username", async (req, res) => {
       },
     })
 
-    return res.status(200)
+    return res.status(200).send()
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: "Error unfollowing user" })
