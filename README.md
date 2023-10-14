@@ -37,6 +37,8 @@ This project provides an API for managing [carbon](https://github.com/alphalumen
 
 This document provides information about the API routes and their functionalities in the provided code. The API is designed for user authentication, user actions, and managing user credit logs.
 
+Note that any error status will come along a JSON with an `error` key which will describe the error, and if applied, its causes.
+
 ### `POST /signup`
 
 #### Description
@@ -51,6 +53,16 @@ This route allows a user to sign up by creating a new account with a username an
 
 #### Response
 - Status Code 201 (Created) - A successful user registration.
+  - Response Body:
+    - `cookie` (object):
+      - `originalMaxAge` (number): The original maximum age of the session cookie.
+      - `expires` (string): The timestamp when the session cookie expires.
+      - `httpOnly` (boolean): Indicates if the cookie is HTTP-only.
+      - `path` (string): The path for the cookie.
+    - `authenticated` (boolean): true
+    - `user` (object):
+      - `username` (string): The username of the authenticated user.
+- Status Code 400 (Bad Request) - Invalid request data.
 - Status Code 500 (Internal Server Error) - An error occurred while creating the user.
 
 ### `POST /signin`
@@ -67,6 +79,16 @@ This route allows a user to sign in by providing their username and password.
 
 #### Response
 - Status Code 200 (OK) - Successful authentication. The user session is established.
+  - Response Body:
+    - `cookie` (object):
+      - `originalMaxAge` (number): The original maximum age of the session cookie.
+      - `expires` (string): The timestamp when the session cookie expires.
+      - `httpOnly` (boolean): Indicates if the cookie is HTTP-only.
+      - `path` (string): The path for the cookie.
+    - `authenticated` (boolean): true
+    - `user` (object):
+      - `username` (string): The username of the authenticated user.
+- Status Code 400 (Bad Request) - Invalid request data.
 - Status Code 403 (Forbidden) - Authentication failed due to bad credentials.
 - Status Code 500 (Internal Server Error) - An error occurred during authentication.
 
@@ -82,6 +104,7 @@ This route allows an authenticated user to sign out, clearing their session and 
 #### Response
 - Status Code 200 (OK) - User signed out successfully.
 - Status Code 401 (Unauthorized) - User not authenticated.
+- Status Code 500 (Internal Server Error) - An error occurred during signout.
 
 ### `GET /feed`
 
@@ -94,6 +117,14 @@ This route retrieves a feed of credit logs for the authenticated user and users 
 
 #### Response
 - Status Code 200 (OK) - Successful retrieval of the user's feed.
+  - Response Body:
+    - Array of credit logs:
+      - `amount` (number): The amount associated with the credit log.
+      - `createdAt` (string): The timestamp of the credit log creation.
+      - `type` (string): The type of the credit log.
+      - `user` (object):
+        - `username` (string): The username of the user who created the log.
+      - `following` (boolean): Indicates if the log is from a user the authenticated user follows.
 - Status Code 401 (Unauthorized) - User not authenticated.
 - Status Code 404 (Not Found) - User not found.
 - Status Code 500 (Internal Server Error) - An error occurred during feed retrieval.
@@ -129,6 +160,7 @@ This route allows the authenticated user to unfollow another user by their usern
 
 #### Response
 - Status Code 200 (OK) - Successful unfollow operation.
+- Status Code 400 (Bad Request) - Invalid request data.
 - Status Code 401 (Unauthorized) - User not authenticated.
 - Status Code 500 (Internal Server Error) - An error occurred during the unfollow operation.
 
@@ -143,6 +175,11 @@ This route retrieves a list of credit logs associated with the authenticated use
 
 #### Response
 - Status Code 200 (OK) - Successful retrieval of the user's credit logs.
+  - Response Body:
+    - Array of credit logs:
+      - `amount` (number): The amount associated with the credit log.
+      - `createdAt` (string): The timestamp of the credit log creation.
+      - `type` (string): The type of the credit log.
 - Status Code 401 (Unauthorized) - User not authenticated.
 - Status Code 404 (Not Found) - User not found.
 - Status Code 500 (Internal Server Error) - An error occurred during credit log retrieval.
