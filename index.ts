@@ -126,8 +126,10 @@ app.get("/feed", async (req, res) => {
   }
 
   try {
+    const username = req.session?.user?.username
+
     const user = await prisma.user.findUnique({
-      where: { username: req.session?.user?.username },
+      where: { username },
       select: {
         id: true,
         following: { select: { id: true } },
@@ -165,7 +167,10 @@ app.get("/feed", async (req, res) => {
     })
 
     return res.json([
-      ...followingFeed.map((log) => ({ ...log, following: true })),
+      ...followingFeed.map((log) => ({
+        ...log,
+        following: log.user.username !== username,
+      })),
       ...globalFeed.map((log) => ({ ...log, following: false })),
     ])
   } catch (error) {
